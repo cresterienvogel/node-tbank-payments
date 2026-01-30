@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  NEW
+  PENDING_PAYMENT
+  PAID
+  CANCELED
+  FAILED
+}
+
+enum PaymentStatus {
+  NEW
+  FORM_SHOWED
+  AUTHORIZING
+  AUTHORIZED
+  CONFIRMED
+  CANCELED
+  REJECTED
+  UNKNOWN
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  amount      Int
+  currency    String      @default("RUB")
+  description String?
+  status      OrderStatus @default(NEW)
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  payments    Payment[]
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String
+  provider          String        @default("tbank")
+  providerPaymentId String?       @unique
+  payUrl            String?
+  status            PaymentStatus @default(NEW)
+  amount            Int
+  rawInitResponse   Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  order             Order         @relation(fields: [orderId], references: [id])
+  history           PaymentStatusHistory[]
+}
+
+model PaymentStatusHistory {
+  id        String        @id @default(uuid())
+  paymentId String
+  from      PaymentStatus
+  to        PaymentStatus
+  raw       Json
+  createdAt DateTime      @default(now())
+  payment   Payment       @relation(fields: [paymentId], references: [id])
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  provider  String   @default("tbank")
+  dedupeKey String   @unique
+  raw       Json
+  receivedAt DateTime @default(now())
+}
+
+model IdempotencyKey {
+  key         String   @id
+  requestHash String
+  response    Json
+  createdAt   DateTime @default(now())
+}
+
+model OutboxEvent {
+  id         String       @id @default(uuid())
+  type       String
+  payload    Json
+  status     OutboxStatus @default(PENDING)
+  attempts   Int          @default(0)
+  lastError  String?
+  nextRunAt  DateTime     @default(now())
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
