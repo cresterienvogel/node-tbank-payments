@@ -7,7 +7,7 @@ export type TbankInitRequest = {
   SuccessURL?: string;
   FailURL?: string;
   Token?: string;
-};
+}
 
 export type TbankInitResponse = {
   Success: boolean;
@@ -16,13 +16,13 @@ export type TbankInitResponse = {
   Details?: string;
   PaymentId?: string;
   PaymentURL?: string;
-};
+}
 
 export type TbankGetStateRequest = {
   TerminalKey: string;
   PaymentId: string;
   Token?: string;
-};
+}
 
 export type TbankGetStateResponse = {
   Success: boolean;
@@ -31,17 +31,17 @@ export type TbankGetStateResponse = {
   PaymentId?: string;
   Message?: string;
   Details?: string;
-};
+}
 
 export type TbankCancelRequest = {
   TerminalKey: string;
   PaymentId: string;
   Token?: string;
-};
+}
 
 export type TbankCancelResponse = {
   Success: boolean;
   ErrorCode: string;
   Message?: string;
   Details?: string;
-};
+}
